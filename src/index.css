@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Fira Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-heading: "Fira Code", ui-monospace, SFMono-Regular, monospace;
+
+  /* Backgrounds */
+  --color-background: oklch(0.127 0.028 261);
+  --color-surface: oklch(0.195 0.026 258);
+  --color-surface-raised: oklch(0.265 0.029 260);
+  --color-border: oklch(0.335 0.03 258);
+
+  /* Text */
+  --color-foreground: oklch(0.948 0.014 257);
+  --color-muted: oklch(0.647 0.02 260);
+
+  /* Scenario Path Colors */
+  --color-path-safe: oklch(0.695 0.163 197);
+  --color-path-ambitious: oklch(0.669 0.186 39);
+  --color-path-alt: oklch(0.614 0.212 299);
+
+  /* Dimension Colors */
+  --color-dim-career: oklch(0.729 0.164 195);
+  --color-dim-finance: oklch(0.715 0.21 148);
+  --color-dim-wlb: oklch(0.759 0.172 82);
+  --color-dim-happiness: oklch(0.634 0.2 347);
+  --color-dim-health: oklch(0.687 0.191 42);
+  --color-dim-learning: oklch(0.664 0.186 273);
+
+  /* State Colors */
+  --color-success: oklch(0.685 0.218 149);
+  --color-warning: oklch(0.759 0.172 82);
+  --color-destructive: oklch(0.633 0.221 27);
+
+  /* Shadows */
+  --shadow-card: 0 0 20px oklch(0.695 0.163 197 / 0.08);
+  --shadow-glow-sm: 0 0 12px oklch(0.695 0.163 197 / 0.15);
+  --shadow-glow-lg: 0 0 30px oklch(0.695 0.163 197 / 0.25);
+
+  /* Spacing re-use */
+  --spacing: 0.25rem;
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.4s ease-out;
+  --animate-slide-up: slide-up 0.4s ease-out;
+  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 12px oklch(0.695 0.163 197 / 0.1); }
+    50% { box-shadow: 0 0 24px oklch(0.695 0.163 197 / 0.25); }
+  }
+}
+
+/* Global styles */
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
