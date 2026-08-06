@@ -67,6 +67,14 @@ const SCENARIO_TEMPLATES: Record<DecisionType, Record<PathKind, {
       oppThemes: ["Control over your schedule", "Diversified income sources", "Work on what you love"],
       milestones: ["Secure first three freelance clients", "Build a personal brand", "Attain income floor"],
     },
+    bold: {
+      description: "A calculated career acceleration — pursue a high-growth role, lead a major initiative, or switch to a fast-moving industry. You take deliberate risks with a clear exit plan.",
+      baseScores: { career: 50, finance: 50, wlb: 40, happiness: 50, health: 45, learning: 55 },
+      annualGrowth: [20, 18, 14, 12, 10],
+      riskThemes: ["Higher expectations and scrutiny", "Imposter syndrome in elevated role", "Less work-life separation"],
+      oppThemes: ["Rapid skill and reputation growth", "High visibility leadership experience", "Significant salary jumps"],
+      milestones: ["Land a high-impact role or promotion", "Deliver a flagship project", "Build a standout professional brand"],
+    },
   },
   relocation: {
     safe: {
@@ -92,6 +100,14 @@ const SCENARIO_TEMPLATES: Record<DecisionType, Record<PathKind, {
       riskThemes: ["Extended transition period", "Split focus/loyalty between locations", "Double expenses during transition"],
       oppThemes: ["Lower commitment risk", "Refine goals based on real experience", "Build optionality"],
       milestones: ["Complete test period successfully", "Make final commitment decision", "Establish dual-location setup"],
+    },
+    bold: {
+      description: "A strategic relocation to a major hub for your industry — move to a city known for your field, with a job offer in hand but embracing a completely new environment.",
+      baseScores: { career: 50, finance: 45, wlb: 40, happiness: 45, health: 40, learning: 60 },
+      annualGrowth: [18, 16, 12, 14, 10],
+      riskThemes: ["Higher cost of living in prime location", "Intense competitive market", "Steeper cultural learning curve"],
+      oppThemes: ["Access to top employers and networks", "Higher salary ceiling", "Career acceleration through proximity"],
+      milestones: ["Secure role at target company or industry", "Build a local professional network", "Achieve cost-of-living adjusted growth"],
     },
   },
   education: {
@@ -119,6 +135,14 @@ const SCENARIO_TEMPLATES: Record<DecisionType, Record<PathKind, {
       oppThemes: ["Low financial risk", "Highly customizable", "Fast time-to-market for skills"],
       milestones: ["Complete first bootcamp/cert", "Land first role using new skills", "Achieve income recovery"],
     },
+    bold: {
+      description: "An intensive executive or specialized program at a top school while maintaining your career — think EMBA, intensive certificate, or dual-track study. Maximum investment for maximum return.",
+      baseScores: { career: 50, finance: 35, wlb: 35, happiness: 40, health: 35, learning: 65 },
+      annualGrowth: [28, 22, 15, 12, 10],
+      riskThemes: ["High financial and time cost", "Difficult work-study balance", "May over-specialize too soon"],
+      oppThemes: ["Prestigious credential and network", "Rapid career pivot capability", "Highest earning potential post-grad"],
+      milestones: ["Get accepted into selective program", "Balance work and study successfully", "Land top-tier role upon completion"],
+    },
   },
   finance: {
     safe: {
@@ -144,6 +168,14 @@ const SCENARIO_TEMPLATES: Record<DecisionType, Record<PathKind, {
       riskThemes: ["Moderate market exposure", "May miss out on high-growth opportunities", "Compromise on location/size"],
       oppThemes: ["Equity building over time", "Manageable monthly costs", "Less financial stress than renting"],
       milestones: ["Secure financing/co-ownership deal", "Build home equity", "Refinance to better terms"],
+    },
+    bold: {
+      description: "An aggressive investment and income strategy — real estate with calculated leverage, angel investing, and high-growth side ventures. You play to win big with managed downsides.",
+      baseScores: { career: 30, finance: 55, wlb: 30, happiness: 45, health: 35, learning: 40 },
+      annualGrowth: [15, 25, 20, 18, 15],
+      riskThemes: ["Market timing risk", "Liquidity crunches during downturns", "High cognitive load from multiple streams"],
+      oppThemes: ["Accelerated wealth building", "Multiple income streams", "Financial independence timeline shortened"],
+      milestones: ["Launch first investment or side venture", "Achieve positive cash flow across streams", "Cross first major net worth threshold"],
     },
   },
   entrepreneurship: {
@@ -171,6 +203,14 @@ const SCENARIO_TEMPLATES: Record<DecisionType, Record<PathKind, {
       oppThemes: ["Structured support system", "Access to capital and mentorship", "Shared risk"],
       milestones: ["Get into accelerator or get first grant", "Define clear MVP roadmap", "Achieve sustainable run rate"],
     },
+    bold: {
+      description: "A founder's path with strategic backing — raise a seed round, build a team, and pursue venture-scale growth. The intensity of a startup with the structure of investor guidance.",
+      baseScores: { career: 40, finance: 25, wlb: 25, happiness: 45, health: 30, learning: 65 },
+      annualGrowth: [35, 30, 20, 15, 12],
+      riskThemes: ["Investor pressure and milestones", "Equity dilution with each round", "Co-founder and team dynamics"],
+      oppThemes: ["Access to significant capital", "Scale and impact potential", "Long-term equity upside"],
+      milestones: ["Raise seed or pre-seed round", "Achieve product-market fit", "Scale to team of 5+", "Reach Series A readiness"],
+    },
   },
   personal: {
     safe: {
@@ -196,6 +236,14 @@ const SCENARIO_TEMPLATES: Record<DecisionType, Record<PathKind, {
       riskThemes: ["Hard to commit fully in trial mode", "May not go deep enough to assess", "Fallback can become default"],
       oppThemes: ["Evidence-based decision", "Lower regret risk", "Refined understanding of true needs"],
       milestones: ["Complete trial period", "Evaluate results honestly", "Make informed final decision"],
+    },
+    bold: {
+      description: "A transformative personal overhaul — combine multiple changes (move, career shift, lifestyle redesign) into one intentional, supported transition. Maximum growth through coordinated change.",
+      baseScores: { career: 30, finance: 35, wlb: 35, happiness: 50, health: 35, learning: 55 },
+      annualGrowth: [15, 18, 12, 18, 10, 12],
+      riskThemes: ["Overwhelm from too many changes at once", "Identity disorientation", "Support network strain"],
+      oppThemes: ["Compound personal growth", "Reinvent multiple life areas simultaneously", "Shorter transition period overall"],
+      milestones: ["Design integrated change plan", "Execute first phase of multi-area change", "Achieve new equilibrium in all areas"],
     },
   },
 };
@@ -292,10 +340,15 @@ function generateRecommendation(
     if (prioritizedScore > 45) return "High-risk, high-reward. Your priority areas see moderate gains, but be prepared for tradeoffs in stability and stress.";
     return "The ambitious route doesn't strongly favor your priorities. The risk may not be worth the potential outcome in the areas you care about most.";
   }
-  // alt
-  if (prioritizedScore > 65) return "The middle path offers an excellent balance — good outcomes where it matters most, with manageable risk.";
-  if (prioritizedScore > 45) return "A compromise option with moderate results. It's neither the best nor worst in your priority areas, but offers flexibility.";
-  return "This alternative path may not serve your top priorities well. Consider whether the flexibility trade-off is worth it.";
+  if (pathKind === "alt") {
+    if (prioritizedScore > 65) return "The middle path offers an excellent balance — good outcomes where it matters most, with manageable risk.";
+    if (prioritizedScore > 45) return "A compromise option with moderate results. It's neither the best nor worst in your priority areas, but offers flexibility.";
+    return "This alternative path may not serve your top priorities well. Consider whether the flexibility trade-off is worth it.";
+  }
+  // bold
+  if (prioritizedScore > 70) return "The bold path strikes an excellent balance — high growth potential with strong alignment to your priorities. A calculated risk worth taking.";
+  if (prioritizedScore > 50) return "A solid growth-oriented option. Your priorities see good outcomes, but the increased intensity may challenge your work-life balance.";
+  return "The bold path's high-growth focus doesn't strongly align with your priorities. Consider whether the extra intensity is worth the tradeoff.";
 }
 
 function computeRiskScore(outcomes: YearOutcome[], riskTolerance: string): number {
@@ -351,7 +404,8 @@ export function simulate(input: DecisionInput): SimulationResult {
   const seed = input.question.toLowerCase().trim() + input.decisionType + input.riskTolerance;
   const rand = seededRandom(seed);
 
-  const paths: ScenarioPath[] = (["safe", "ambitious", "alt"] as PathKind[]).map((kind) => {
+  const allPathKinds: PathKind[] = ["safe", "ambitious", "alt", "bold"];
+  const allPaths: (ScenarioPath & { priorityScore: number })[] = allPathKinds.map((kind) => {
     const template = SCENARIO_TEMPLATES[input.decisionType][kind];
     const baseScores = generateBaseScores(template, input.priorities, input.riskTolerance, rand);
     const outcomes = generateOutcomes(
@@ -368,15 +422,34 @@ export function simulate(input: DecisionInput): SimulationResult {
     );
     const recommendation = generateRecommendation(kind, finalScores, input.priorities);
 
+    const name =
+      kind === "safe" ? "Steady Path"
+      : kind === "ambitious" ? "Ambitious Path"
+      : kind === "alt" ? "Alternative Path"
+      : "Bold Path";
+
+    const tagline =
+      kind === "safe" ? "Stable & predictable growth"
+      : kind === "ambitious" ? "High risk, high reward"
+      : kind === "alt" ? "Balanced flexibility"
+      : "Structured high growth";
+
+    const confidence = clamp(
+      kind === "safe" ? 78 + rand() * 10
+      : kind === "ambitious" ? 60 + rand() * 15
+      : kind === "alt" ? 70 + rand() * 12
+      : 65 + rand() * 14,
+    );
+
+    const priorityScore = input.priorities.length > 0
+      ? input.priorities.reduce((sum, d) => sum + (finalScores as any)[d], 0)
+      : DIMENSION_ORDER.reduce((sum, d) => sum + (finalScores as any)[d], 0);
+
     return {
       kind,
-      name: kind === "safe" ? "Steady Path" : kind === "ambitious" ? "Ambitious Path" : "Alternative Path",
-      tagline: kind === "safe"
-        ? "Stable & predictable growth"
-        : kind === "ambitious"
-        ? "High risk, high reward"
-        : "Balanced flexibility",
-      confidence: clamp(kind === "safe" ? 78 + rand() * 10 : kind === "ambitious" ? 60 + rand() * 15 : 70 + rand() * 12),
+      name,
+      tagline,
+      confidence,
       description: template.description,
       outcomes,
       finalScores,
@@ -385,23 +458,20 @@ export function simulate(input: DecisionInput): SimulationResult {
       totalRisk,
       totalReward,
       recommendation,
+      priorityScore,
     };
   });
 
-  // Best fit: prioritize the path where priority dimensions score highest
-  let bestPath: PathKind = "safe";
-  let bestScore = -Infinity;
-  for (const path of paths) {
-    const priorityTotal = input.priorities.length > 0
-      ? input.priorities.reduce((sum, d) => sum + (path.finalScores as any)[d], 0)
-      : DIMENSION_ORDER.reduce((sum, d) => sum + (path.finalScores as any)[d], 0);
-    if (priorityTotal > bestScore) {
-      bestScore = priorityTotal;
-      bestPath = path.kind;
-    }
-  }
+  // Sort by priority score descending and take the requested number of paths
+  allPaths.sort((a, b) => b.priorityScore - a.priorityScore);
+  const selectedPaths = allPaths.slice(0, input.numPaths);
 
-  const bestPathLabel = paths.find((p) => p.kind === bestPath)!.name;
+  // Best fit is the highest-scoring among selected paths
+  const bestPath = selectedPaths[0].kind;
+  const bestPathLabel = selectedPaths[0].name;
+
+  // Clean up the paths to remove internal priorityScore
+  const paths: ScenarioPath[] = selectedPaths.map(({ priorityScore: _, ...p }) => p);
 
   const bestFitReason = input.priorities.length > 0
     ? `Based on your priorities (${input.priorities.join(", ")}), the ${bestPathLabel} maximizes outcomes in the areas most important to you.`

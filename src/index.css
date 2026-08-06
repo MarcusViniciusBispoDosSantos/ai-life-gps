@@ -20,6 +20,7 @@
   --color-path-safe: oklch(0.695 0.163 197);
   --color-path-ambitious: oklch(0.669 0.186 39);
   --color-path-alt: oklch(0.614 0.212 299);
+  --color-path-bold: oklch(0.743 0.192 75);
 
   /* Dimension Colors */
   --color-dim-career: oklch(0.729 0.164 195);

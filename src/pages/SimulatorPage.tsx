@@ -55,7 +55,7 @@ const RISK_OPTIONS = [
   { value: "high" as const, label: "High — I'm ready for big changes" },
 ];
 
-const HORIZON_OPTIONS = [1, 2, 3, 4, 5] as const;
+const CARD_COUNT_OPTIONS = [2, 3, 4] as const;
 
 /* ─── Form Component ─── */
 function DecisionForm({
@@ -69,7 +69,8 @@ function DecisionForm({
     "moderate"
   );
   const [priorities, setPriorities] = useState<DimensionId[]>([]);
-  const [horizonYears, setHorizonYears] = useState<1 | 2 | 3 | 4 | 5>(3);
+  const [horizonYears, setHorizonYears] = useState<number>(3);
+  const [numPaths, setNumPaths] = useState<2 | 3 | 4>(3);
 
   const togglePriority = (d: DimensionId) => {
     setPriorities((prev) =>
@@ -86,6 +87,7 @@ function DecisionForm({
       riskTolerance,
       priorities,
       horizonYears,
+      numPaths,
     });
   };
 
@@ -182,26 +184,52 @@ function DecisionForm({
         </p>
       </div>
 
-      {/* Horizon */}
+      {/* Number of Paths */}
       <div>
         <label className="block text-sm font-medium mb-2 font-heading">
-          Simulation horizon
+          Scenario paths to compare
         </label>
         <div className="flex gap-2">
-          {HORIZON_OPTIONS.map((y) => (
+          {CARD_COUNT_OPTIONS.map((n) => (
             <button
-              key={y}
+              key={n}
               type="button"
-              onClick={() => setHorizonYears(y)}
-              className={`px-4 py-2 rounded-lg text-sm border transition-all cursor-pointer ${
-                horizonYears === y
-                  ? "border-path-alt bg-path-alt/15 text-foreground"
+              onClick={() => setNumPaths(n)}
+              className={`flex-1 px-4 py-2 rounded-lg text-sm border transition-all cursor-pointer ${
+                numPaths === n
+                  ? "border-path-bold bg-path-bold/15 text-foreground"
                   : "border-border bg-surface hover:bg-surface-raised text-muted"
               }`}
             >
-              {y} {y === 1 ? "Year" : "Years"}
+              {n} Paths
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Horizon Slider */}
+      <div>
+        <label className="block text-sm font-medium mb-2 font-heading">
+          Simulation horizon: <strong>{horizonYears} {horizonYears === 1 ? "year" : "years"}</strong>
+        </label>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted w-6 text-right">1</span>
+          <input
+            type="range"
+            min={1}
+            max={20}
+            value={horizonYears}
+            onChange={(e) => setHorizonYears(Number(e.target.value))}
+            className="w-full h-2 rounded-full appearance-none cursor-pointer bg-surface-raised accent-path-alt"
+            style={{
+              background: `linear-gradient(to right, var(--color-path-alt) 0%, var(--color-path-alt) ${((horizonYears - 1) / 19) * 100}%, var(--color-surface-raised) ${((horizonYears - 1) / 19) * 100}%, var(--color-surface-raised) 100%)`,
+            }}
+          />
+          <span className="text-xs text-muted w-6">20</span>
+        </div>
+        <div className="flex justify-between mt-1">
+          <span className="text-[10px] text-muted/50">Short-term</span>
+          <span className="text-[10px] text-muted/50">Long-term</span>
         </div>
       </div>
 
@@ -387,7 +415,7 @@ function ScenarioCard({
       animate={{ opacity: 1, y: 0 }}
       className={`rounded-xl border overflow-hidden ${
         isBest
-          ? `border-${path.kind === "safe" ? "path-safe" : path.kind === "ambitious" ? "path-ambitious" : "path-alt"}/40 shadow-card`
+          ? `border-${path.kind === "bold" ? "path-bold" : path.kind === "safe" ? "path-safe" : path.kind === "ambitious" ? "path-ambitious" : "path-alt"}/40 shadow-card`
           : "border-border"
       }`}
       style={{
@@ -684,7 +712,11 @@ export default function SimulatorPage() {
             </div>
 
             {/* Scenario Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+            <div className={`grid grid-cols-1 gap-4 sm:gap-5 ${
+              result.paths.length === 2 ? "lg:grid-cols-2" :
+              result.paths.length === 4 ? "lg:grid-cols-2 xl:grid-cols-4" :
+              "lg:grid-cols-3"
+            }`}>
               {result.paths.map((p) => (
                 <ScenarioCard key={p.kind} path={p} isBest={p.kind === bestPath} />
               ))}

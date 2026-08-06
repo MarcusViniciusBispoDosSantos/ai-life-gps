@@ -14,7 +14,7 @@ export type DimensionId =
   | "health"
   | "learning";
 
-export type PathKind = "safe" | "ambitious" | "alt";
+export type PathKind = "safe" | "ambitious" | "alt" | "bold";
 
 export interface DecisionInput {
   /** The user's question, e.g. "Should I quit my job to start a business?" */
@@ -23,7 +23,9 @@ export interface DecisionInput {
   riskTolerance: "low" | "moderate" | "high";
   /** Dimensions the user cares most about (0-6). */
   priorities: DimensionId[];
-  horizonYears: 1 | 2 | 3 | 4 | 5;
+  horizonYears: number;
+  /** Number of scenario paths to generate (2-4). */
+  numPaths: 2 | 3 | 4;
 }
 
 export interface DimensionScores {
@@ -150,5 +152,10 @@ export const PATH_META: Record<
     name: "Alternative Path",
     color: "#a78bfa",
     glow: "rgba(167, 139, 250, 0.35)",
+  },
+  bold: {
+    name: "Bold Path",
+    color: "#f59e0b",
+    glow: "rgba(245, 158, 11, 0.35)",
   },
 };
