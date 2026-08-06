@@ -27,8 +27,10 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
+  Search,
 } from "lucide-react";
 import { useApp } from "../store/AppContext";
+import PathDetailModal from "../components/PathDetailModal";
 import {
   DecisionInput,
   DecisionType,
@@ -402,9 +404,11 @@ function ScoreBars({
 function ScenarioCard({
   path,
   isBest,
+  onDeepDive,
 }: {
   path: import("../lib/simulation/types").ScenarioPath;
   isBest: boolean;
+  onDeepDive: (path: import("../lib/simulation/types").ScenarioPath) => void;
 }) {
   const meta = PATH_META[path.kind];
   const [expanded, setExpanded] = useState(false);
@@ -551,6 +555,26 @@ function ScenarioCard({
             )}
           </AnimatePresence>
         </div>
+
+        {/* Deep Dive Button */}
+        <button
+          onClick={() => onDeepDive(path)}
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-medium rounded-lg border transition-all cursor-pointer"
+          style={{
+            borderColor: meta.color + "44",
+            color: meta.color,
+            backgroundColor: meta.color + "0a",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = meta.color + "18";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = meta.color + "0a";
+          }}
+        >
+          <Search className="w-3 h-3" />
+          Explore Path in Detail
+        </button>
       </div>
     </motion.div>
   );
@@ -618,6 +642,8 @@ export default function SimulatorPage() {
     useState<import("../lib/simulation/types").SimulationResult | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [detailPath, setDetailPath] =
+    useState<import("../lib/simulation/types").ScenarioPath | null>(null);
 
   const handleRun = (input: DecisionInput) => {
     const simResult = runSimulation(input);
@@ -718,7 +744,12 @@ export default function SimulatorPage() {
               "lg:grid-cols-3"
             }`}>
               {result.paths.map((p) => (
-                <ScenarioCard key={p.kind} path={p} isBest={p.kind === bestPath} />
+                <ScenarioCard
+                  key={p.kind}
+                  path={p}
+                  isBest={p.kind === bestPath}
+                  onDeepDive={setDetailPath}
+                />
               ))}
             </div>
 
@@ -733,6 +764,13 @@ export default function SimulatorPage() {
           </div>
         )}
       </div>
+
+      {/* Path Detail Modal */}
+      <PathDetailModal
+        path={detailPath}
+        open={detailPath !== null}
+        onClose={() => setDetailPath(null)}
+      />
     </div>
   );
 }
