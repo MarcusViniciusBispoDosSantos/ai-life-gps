@@ -39,6 +39,7 @@ import {
   DIMENSION_ORDER,
   DIMENSION_COLORS,
   PATH_META,
+  getScoreExplanation,
 } from "../lib/simulation/types";
 
 /* ─── Decision Type Options ─── */
@@ -373,9 +374,17 @@ function ScoreBars({
   path: import("../lib/simulation/types").ScenarioPath;
 }) {
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-3">
       {DIMENSION_ORDER.map((d) => {
         const score = path.finalScores[d];
+        const explanation = getScoreExplanation(d, score);
+        const bandColors: Record<string, string> = {
+          Excellent: "text-success",
+          Good: "text-dim-career",
+          Moderate: "text-dim-wlb",
+          "Below Average": "text-destructive",
+          Weak: "text-destructive",
+        };
         return (
           <div key={d} className="space-y-1">
             <div className="flex justify-between text-xs">
@@ -392,6 +401,12 @@ function ScoreBars({
                   backgroundColor: DIMENSION_COLORS[d],
                 }}
               />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-medium ${bandColors[explanation.band] || "text-muted"}`}>
+                {explanation.band}
+              </span>
+              <span className="text-[10px] text-muted/70 truncate">{explanation.description}</span>
             </div>
           </div>
         );

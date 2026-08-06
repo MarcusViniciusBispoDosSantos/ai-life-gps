@@ -8,6 +8,7 @@ import {
   SimulationResult,
   YearOutcome,
   DIMENSION_ORDER,
+  DIMENSION_META,
   AssumptionNote,
 } from "./types";
 
@@ -325,30 +326,59 @@ function generateRecommendation(
   pathKind: PathKind,
   scores: DimensionScores,
   priorities: DimensionId[],
+  _decisionType: DecisionType,
 ): string {
   const prioritizedScore = priorities.length > 0
     ? priorities.reduce((sum, d) => sum + (scores as any)[d], 0) / priorities.length
     : 60;
 
+  // Identify strongest and weakest dimensions
+  let bestDim = DIMENSION_ORDER[0];
+  let worstDim = DIMENSION_ORDER[0];
+  for (const d of DIMENSION_ORDER) {
+    if ((scores as any)[d] > (scores as any)[bestDim]) bestDim = d;
+    if ((scores as any)[d] < (scores as any)[worstDim]) worstDim = d;
+  }
+  const bestLabel = DIMENSION_META[bestDim].label;
+  const worstLabel = DIMENSION_META[worstDim].label;
+  const bestScore = (scores as any)[bestDim];
+  const worstScore = (scores as any)[worstDim];
+
   if (pathKind === "safe") {
-    if (prioritizedScore > 70) return "This path strongly aligns with your priorities — you'll progress steadily without major disruptions.";
-    if (prioritizedScore > 50) return "A balanced option that provides stability. You may need to supplement with side projects to hit all your goals.";
-    return "Conservative path with low stress but may not fully satisfy your ambitions in the prioritized areas.";
+    if (prioritizedScore > 70) {
+      return `This path is a natural fit for you. Your strongest area will be ${bestLabel} (${bestScore}/100) — you'll make reliable progress there without the stress of drastic change. The tradeoff is that ${worstLabel} may lag at ${worstScore}/100, but you can compensate with side initiatives. Think of this as building a solid foundation: slow and steady wins the race, especially if stability matters to you right now.`;
+    }
+    if (prioritizedScore > 50) {
+      return `This path offers comfortable stability, especially in ${bestLabel} (${bestScore}/100). You won't be stretching yourself too thin, but ${worstLabel} (${worstScore}/100) is an area where you may feel held back. If you have major life responsibilities (family, health, finances) that need predictability, this path gives you that peace of mind — just don't expect rapid transformation.`;
+    }
+    return `The steady approach gives you peace of mind and low stress, but your priorities aren't its strong suit — particularly ${worstLabel} (${worstScore}/100). You'll likely feel a nagging sense of "what if?" over time. This path works best as a temporary base camp while you prepare for something bigger, not as a final destination if you're ambitious.`;
   }
   if (pathKind === "ambitious") {
-    if (prioritizedScore > 70) return "This path maximizes your priority dimensions. The high risk is matched by high potential — your values align with the challenge.";
-    if (prioritizedScore > 45) return "High-risk, high-reward. Your priority areas see moderate gains, but be prepared for tradeoffs in stability and stress.";
-    return "The ambitious route doesn't strongly favor your priorities. The risk may not be worth the potential outcome in the areas you care about most.";
+    if (prioritizedScore > 70) {
+      return `This is your high-ceiling play. ${bestLabel} (${bestScore}/100) is where you'll really shine — expect rapid growth and breakthrough moments. But be honest with yourself: ${worstLabel} (${worstScore}/100) will take a hit, and the first 1-2 years will feel like a grind. The payoff comes in years 3-5 when your trajectory steepens. If you have a strong support system and runway, this path could accelerate your life by 5+ years in one leap.`;
+    }
+    if (prioritizedScore > 45) {
+      return `The ambitious route pushes you hard, with your biggest gains in ${bestLabel} (${bestScore}/100). But there's a real cost: ${worstLabel} (${worstScore}/100) is a weak spot that will test your resilience. You'll face late nights, uncertainty, and moments of doubt. Ask yourself: is the adrenaline of the climb worth the valleys you'll walk through? If you're in your 20s or early 30s with minimal obligations, this is the time to take this bet.`;
+    }
+    return `Honestly, the ambitious path doesn't play to your strengths or priorities — especially in ${worstLabel} (${worstScore}/100). The risk here (stress, instability, burnout risk) likely outweighs the reward for what you care about. You'd be fighting an uphill battle. Unless you have a burning conviction that this specific leap is necessary, a more moderate option would likely serve you better.`;
   }
   if (pathKind === "alt") {
-    if (prioritizedScore > 65) return "The middle path offers an excellent balance — good outcomes where it matters most, with manageable risk.";
-    if (prioritizedScore > 45) return "A compromise option with moderate results. It's neither the best nor worst in your priority areas, but offers flexibility.";
-    return "This alternative path may not serve your top priorities well. Consider whether the flexibility trade-off is worth it.";
+    if (prioritizedScore > 65) {
+      return `This middle way hits a sweet spot for you. ${bestLabel} (${bestScore}/100) gives you a meaningful edge where it counts, while the balanced approach keeps ${worstLabel} (${worstScore}/100) from becoming a crisis. You won't get the headline-grabbing wins of a riskier path, but you also won't lie awake at night worrying. This is the path for someone who wants real progress without sacrificing their peace of mind.`;
+    }
+    if (prioritizedScore > 45) {
+      return `A balanced compromise: ${bestLabel} (${bestScore}/100) is decent, and ${worstLabel} (${worstScore}/100) is manageable — nothing extreme either way. This path gives you flexibility and optionality. The downside? You might feel like you're half-committing, which can be frustrating if you're decisive. It works well if you're still figuring out what you want and need time to explore.`;
+    }
+    return `The alternative path doesn't particularly serve your priorities. While ${bestLabel} (${bestScore}/100) shows some promise, ${worstLabel} (${worstScore}/100) is underwhelming for what you care about. You'd be making compromises without getting enough back in return. Unless the flexibility itself is your top value, you're likely better off with a more focused option.`;
   }
   // bold
-  if (prioritizedScore > 70) return "The bold path strikes an excellent balance — high growth potential with strong alignment to your priorities. A calculated risk worth taking.";
-  if (prioritizedScore > 50) return "A solid growth-oriented option. Your priorities see good outcomes, but the increased intensity may challenge your work-life balance.";
-  return "The bold path's high-growth focus doesn't strongly align with your priorities. Consider whether the extra intensity is worth the tradeoff.";
+  if (prioritizedScore > 70) {
+    return `The bold path is your calculated fast-track. ${bestLabel} (${bestScore}/100) is where you'll see outsized returns — this path was practically designed to amplify that area. However, ${worstLabel} (${worstScore}/100) will require deliberate management. The key difference from the ambitious path is structure: bold isn't reckless, it's aggressive with a plan. If you have a clear 3-year vision and the discipline to execute, this is your smartest bet.`;
+  }
+  if (prioritizedScore > 50) {
+    return `A strong growth option with real upside in ${bestLabel} (${bestScore}/100). The catch is that ${worstLabel} (${worstScore}/100) suffers under the intensity. You'll need strong systems (scheduling, support, self-care) to prevent the weak areas from dragging everything down. This path suits someone who wants to accelerate but still keep their life in working order — think of it as pushing the accelerator to 70%, not 100%.`;
+  }
+  return `The bold path demands a lot and gives mixed returns for your priorities. ${bestLabel} (${bestScore}/100) is decent, but ${worstLabel} (${worstScore}/100) is a real concern. The intensity may not justify the outcome for what truly matters to you. If you're drawn to this path, consider whether the challenge itself (not just the outcome) would make it worthwhile for you as a growth experience.`;
 }
 
 function computeRiskScore(outcomes: YearOutcome[], riskTolerance: string): number {
@@ -420,7 +450,7 @@ export function simulate(input: DecisionInput): SimulationResult {
     const totalReward = clamp(
       DIMENSION_ORDER.reduce((sum, d) => sum + (finalScores as any)[d] - 50, 0) / 2 + 50,
     );
-    const recommendation = generateRecommendation(kind, finalScores, input.priorities);
+    const recommendation = generateRecommendation(kind, finalScores, input.priorities, input.decisionType);
 
     const name =
       kind === "safe" ? "Steady Path"
@@ -469,13 +499,23 @@ export function simulate(input: DecisionInput): SimulationResult {
   // Best fit is the highest-scoring among selected paths
   const bestPath = selectedPaths[0].kind;
   const bestPathLabel = selectedPaths[0].name;
+  const bestPathScores = selectedPaths[0].finalScores;
+
+  // Build a vivid best-fit reason
+  let bestDim = DIMENSION_ORDER[0];
+  let worstDim = DIMENSION_ORDER[0];
+  for (const d of DIMENSION_ORDER) {
+    if ((bestPathScores as any)[d] > (bestPathScores as any)[bestDim]) bestDim = d;
+    if ((bestPathScores as any)[d] < (bestPathScores as any)[worstDim]) worstDim = d;
+  }
+  const bestLabel = DIMENSION_META[bestDim].label;
 
   // Clean up the paths to remove internal priorityScore
   const paths: ScenarioPath[] = selectedPaths.map(({ priorityScore: _, ...p }) => p);
 
   const bestFitReason = input.priorities.length > 0
-    ? `Based on your priorities (${input.priorities.join(", ")}), the ${bestPathLabel} maximizes outcomes in the areas most important to you.`
-    : `The ${bestPathLabel} balances the highest overall outcomes with manageable risk.`;
+    ? `${bestPathLabel} is your recommended path because it scores highest on what you care about most. It excels in ${bestLabel.toLowerCase()} (${(bestPathScores as any)[bestDim]}/100) and handles your other priorities well — giving you the best overall alignment with less compromise than other options.`
+    : `${bestPathLabel} offers the best overall balance across all life dimensions — strong in ${bestLabel.toLowerCase()} (${(bestPathScores as any)[bestDim]}/100) while keeping trade-offs manageable. It's the safest bet when you want solid progress without betting everything on one area.`;
 
   return {
     id: `sim_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -486,4 +526,95 @@ export function simulate(input: DecisionInput): SimulationResult {
     bestFitPath: bestPath,
     bestFitReason,
   };
+}
+
+/* ─── Q&A — answer questions about a path ─── */
+
+export function answerPathQuestion(path: ScenarioPath, question: string): string {
+  const q = question.toLowerCase();
+
+  // Find best/worst dimensions
+  let bestDim = DIMENSION_ORDER[0];
+  let worstDim = DIMENSION_ORDER[0];
+  for (const d of DIMENSION_ORDER) {
+    if ((path.finalScores as any)[d] > (path.finalScores as any)[bestDim]) bestDim = d;
+    if ((path.finalScores as any)[d] < (path.finalScores as any)[worstDim]) worstDim = d;
+  }
+  const bestLabel = DIMENSION_META[bestDim].label;
+  const worstLabel = DIMENSION_META[worstDim].label;
+  const bestScore = (path.finalScores as any)[bestDim];
+  const worstScore = (path.finalScores as any)[worstDim];
+
+  // --- "what if" / "if I lose my job" / set back / unexpected ---
+  if (q.includes("what if") || q.includes("lose") || q.includes("job") || q.includes("setback") || q.includes("unexpected") || q.includes("fail") || q.includes("wrong") || q.includes("worst")) {
+    if (path.kind === "safe") {
+      return `Even on the Steady Path, setbacks happen — but this path is the most resilient to them.\n\nIf you lost your job or faced a major unexpected expense, your strongest asset is ${bestLabel} (${bestScore}/100), which gives you more margin to recover. The area most vulnerable would be ${worstLabel} (${worstScore}/100) — it's already your weakest point, so a setback here could be harder to bounce back from.\n\nKey safety nets on this path:\n• Higher work-life balance means more energy to pivot\n• Steady income provides financial buffer\n• Established network helps with career transitions\n\nThe recommendation: build a 3-6 month emergency fund as your first priority on this path.`;
+    }
+    if (path.kind === "ambitious") {
+      return `On the Ambitious Path, setbacks hit harder. This is the most vulnerable path to unexpected events because ${worstLabel} (${worstScore}/100) leaves little buffer.\n\nIf you lost your income stream or the bet doesn't pay off in Year 1-2, you'd face financial pressure quickly. The saving grace is ${bestLabel} (${bestScore}/100) — your strongest area gives you options to recover faster than you might expect.\n\nKey things that could go wrong:\n• Running out of runway before the payoff arrives\n• Burnout forcing you to slow down at a critical moment\n• The market not responding the way you hoped\n\nMitigation plan: define clear "stop-loss" checkpoints at 6, 12, and 18 months. If those milestones aren't met, have a Plan B ready.`;
+    }
+    if (path.kind === "alt") {
+      return `The Alternative Path is designed for flexibility, so it handles setbacks better than you might think.\n\n${bestLabel} (${bestScore}/100) gives you a strong foundation, and the flexible nature of this path means you can adjust course without a major reset. The main risk is that ${worstLabel} (${worstScore}/100) could take longer to recover from because you're already operating with lower intensity.\n\nWhat a setback looks like here:\n• A client drops off or a project falls through — you have other streams to lean on\n• You lose motivation — the lower pressure means you can take a breather\n• Unexpected costs — the diversified approach gives you more adjustment levers\n\nThe key advantage: you can scale back temporarily without derailing your entire trajectory.`;
+    }
+    // bold
+    return `The Bold Path has structure, so unexpected events are less catastrophic than on the Ambitious path — but they still matter.\n\n${bestLabel} (${bestScore}/100) is your shield — it's strong enough to weather some turbulence. The real concern is ${worstLabel} (${worstScore}/100), which would be the first domino to fall under pressure.\n\nWhat helps:\n• You have a plan with clear milestones, so you can detect problems early\n• The structured approach means you have identified back-up options\n• Your growth rate gives you more recovery velocity than slower paths\n\nWarning sign: if ${worstLabel.toLowerCase()} drops below 30, pause and reassess. That's the signal that the path's demands have exceeded your capacity.`;
+  }
+
+  // --- "compare" / "how is this different" / "versus" / "other path" ---
+  if (q.includes("compare") || q.includes("different") || q.includes("versus") || q.includes("vs") || q.includes("other") || q.includes("another") || q.includes("instead")) {
+    return `Here's how the ${path.name} compares to the alternatives:\n\n• **Steady Path**: Has higher ${DIMENSION_META.wlb.label} and ${DIMENSION_META.health.label} but lower growth potential. The ${path.name} trades some stability for more opportunity.\n• **Ambitious Path**: More extreme highs and lows. The ${path.name} has more structure and less pure upside, but also less risk of total derailment.\n• **Alternative Path**: More flexibility day-to-day. The ${path.name} requires more commitment but offers clearer progression.\n• **Bold Path**: Similar intensity to this one but with a more aggressive stance. The ${path.name} trades some speed for better balance.\n\nYour strongest advantage here: ${bestLabel} (${bestScore}/100) — that's the deciding factor that sets this path apart.`;
+  }
+
+  // --- "year 1" / "year 2" / "first year" / "how does it start" ---
+  if (q.includes("year 1") || q.includes("first year") || q.includes("start") || q.includes("beginning") || q.includes("early") || q.includes("initial")) {
+    const y1 = path.outcomes[0];
+    if (!y1) return "I don't have enough data to describe the early phase of this path in detail.";
+    const topDim = DIMENSION_ORDER.reduce((a, b) => (y1.scores[a] > y1.scores[b] ? a : b));
+    const lowDim = DIMENSION_ORDER.reduce((a, b) => (y1.scores[a] < y1.scores[b] ? a : b));
+    return `In Year 1 on the ${path.name}, here's what to expect:\n\n• Your strongest area from the start is **${DIMENSION_META[topDim].label}** (${y1.scores[topDim]}/100) — you'll see early wins here that build momentum.\n• Your biggest challenge is **${DIMENSION_META[lowDim].label}** (${y1.scores[lowDim]}/100) — this will feel like the hardest part and need the most attention.\n• The overall average score starts around ${Math.round(DIMENSION_ORDER.reduce((s, d) => s + y1.scores[d], 0) / DIMENSION_ORDER.length)}/100.\n${y1.milestone ? `• A key early milestone: "${y1.milestone.title}" — ${y1.milestone.detail}.` : ""}\n\nThe first year is about building the foundation. Focus on protecting ${DIMENSION_META[lowDim].label} to prevent early burnout.`;
+  }
+
+  // --- "year 3" / "later years" / "final" / "long term" ---
+  if (q.includes("year 3") || q.includes("year 4") || q.includes("year 5") || q.includes("later") || q.includes("final") || q.includes("long term") || q.includes("eventually") || q.includes("end")) {
+    const last = path.outcomes[path.outcomes.length - 1];
+    if (!last) return "I don't have projected data for the later years of this path.";
+    const delta = DIMENSION_ORDER.map(d => ({ d, change: last.scores[d] - path.outcomes[0].scores[d] }))
+      .sort((a, b) => b.change - a.change);
+    const biggestGain = delta[0];
+    const biggestLoss = delta[delta.length - 1];
+    return `Looking at the end of this ${path.outcomes.length}-year projection on the ${path.name}:\n\n• Your biggest gain is in **${DIMENSION_META[biggestGain.d].label}** (${biggestGain.change > 0 ? "+" : ""}${biggestGain.change} points) — reaching ${last.scores[biggestGain.d]}/100 by the final year.\n${biggestLoss.change < -5 ? `• Your biggest decline is in **${DIMENSION_META[biggestLoss.d].label}** (${biggestLoss.change} points) — ending at ${last.scores[biggestLoss.d]}/100.` : `• No significant declines — you end with ${DIMENSION_META[biggestLoss.d].label} at ${last.scores[biggestLoss.d]}/100.`}\n• Final overall average: ${Math.round(DIMENSION_ORDER.reduce((s, d) => s + last.scores[d], 0) / DIMENSION_ORDER.length)}/100\n\nAt the end of this horizon, ${bestLabel} (${bestScore}/100) remains your standout strength, while ${worstLabel} (${worstScore}/100) still needs attention. The trajectory is ${bestScore > 70 ? "strongly positive" : worstScore < 40 ? "mixed with concerns" : "generally stable"}.`;
+  }
+
+  // --- "how" / "what do I do" / "action" / "steps" / "plan" ---
+  if (q.includes("how do i") || q.includes("what should") || q.includes("action") || q.includes("steps") || q.includes("plan") || q.includes("next") || q.includes("prepare") || q.includes("recommend")) {
+    const milestones = path.outcomes.filter(o => o.milestone).slice(0, 3);
+    const steps = milestones.map((m, i) => `${i + 1}. **${m.milestone!.title}** (Year ${m.year}) — ${m.milestone!.detail}`).join("\n");
+    return `Here's a practical action plan for the ${path.name}:\n\n${steps || "1. Start by protecting your weakest area — **" + worstLabel + "** needs deliberate attention from day one.\n2. Double down on **" + bestLabel + "** — this is where you'll see the highest return on effort.\n3. Set 3-month review checkpoints to track progress and adjust."}\n\nWatch out for: ${path.risks.slice(0, 2).join(" and ")}. These are the most common stumbling blocks on this path.\n\nMost importantly, don't try to optimize everything at once. Pick ONE area to focus on each quarter and let the others coast.`;
+  }
+
+  // --- "risk" / "danger" / "scared" / "worried" / "nervous" ---
+  if (q.includes("risk") || q.includes("danger") || q.includes("scared") || q.includes("worried") || q.includes("nervous") || q.includes("stress") || q.includes("anxious")) {
+    const riskItems = path.risks.slice(0, 2);
+    return `It's normal to feel nervous — here's an honest look at the risks on the ${path.name}:\n\n• **${riskItems[0] || "No specific risk identified"}** — this is the most likely challenge you'll face.\n${riskItems[1] ? `• **${riskItems[1]}** — a secondary concern to keep on your radar.` : ""}\n• **${worstLabel} (${worstScore}/100)** — this dimension is your weakest link and needs protection.\n\nHere's the thing: a risk score of ${path.totalRisk}/100 means the path has ${path.totalRisk < 30 ? "relatively low" : path.totalRisk < 50 ? "moderate" : "significant"} risk. ${path.totalRisk < 30 ? "This is actually one of the safer options available." : path.totalRisk < 50 ? "The risks are real but manageable with good planning." : "You should take these risks seriously and have contingency plans ready."}\n\nWhat helps most: having a trusted person to talk through decisions with, and writing down your "if-then" plans before you need them.`;
+  }
+
+  // --- "happiness" / "will I be happy" / "fulfill" / "satisfied" ---
+  if (q.includes("happ") || q.includes("fulfill") || q.includes("satisfied") || q.includes("enjoy") || q.includes("love") || q.includes("regret")) {
+    const happinessScore = path.finalScores.happiness;
+    const healthScore = path.finalScores.health;
+    if (happinessScore >= 65) {
+      return `On the happiness front, this path scores well (${happinessScore}/100). You're likely to feel genuinely satisfied with your direction, especially as ${bestLabel} (${bestScore}/100) gives you a sense of purpose and progress.\n\nHowever, happiness isn't everything — your ${worstLabel} (${worstScore}/100) could create frustration that bleeds into overall wellbeing. The key is to have outlets and relationships outside of this path that keep you grounded.\n\nHealth ${healthScore >= 50 ? `(${healthScore}/100) is manageable` : `(${healthScore}/100) needs watching`}. ${healthScore < 50 ? "Make sure you build rest and recovery into your routine from day one." : "Adequate self-care should keep you in good shape."}`;
+    }
+    return `Honestly, happiness is a concern on this path (${happinessScore}/100). The demands and trade-offs may leave you feeling unfulfilled at times, especially if ${worstLabel} (${worstScore}/100) becomes a source of daily frustration.\n\nThat doesn't mean you can't be happy — it means you need to be intentional about finding fulfillment outside the path's main focus. Strong relationships, hobbies, and clear boundaries will make the difference.\n\nA practical tip: if you choose this path, commit to a 6-month check-in where you honestly assess your happiness. If it's below where you need to be, adjust or switch.`;
+  }
+
+  // --- "money" / "finance" / "salary" / "income" / "cost" ---
+  if (q.includes("money") || q.includes("finance") || q.includes("salary") || q.includes("income") || q.includes("cost") || q.includes("pay") || q.includes("expensive") || q.includes("budget")) {
+    const financeScore = path.finalScores.finance;
+    const careerScore = path.finalScores.career;
+    return `Let's talk finances. On the ${path.name}, your financial outlook is **${financeScore}/100**.\n\n${financeScore >= 65 ? "This path puts you in a solid financial position. Income growth is likely steady and your savings should build at a healthy rate." : financeScore >= 45 ? "Finances are adequate but not exciting. You'll cover your needs and build modest savings — but don't expect rapid wealth accumulation." : "This path puts financial pressure on you. Income may be tight, especially early on. Budgeting and a financial buffer are essential before committing."}\n\nYour ${DIMENSION_META.career.label} score (${careerScore}/100) ${careerScore >= 60 ? "supports good income growth over time, so the financial picture should improve as you progress." : "may limit income growth. Consider whether the financial trade-off is acceptable for what you gain in other areas."}\n\n⚠️ Important: these are rough directional estimates based on your decision type — not financial advice. Your actual outcomes depend on your specific industry, location, and personal circumstances.`;
+  }
+
+  // --- Generic response ---
+  return `Great question! Here's what I can tell you about the ${path.name}:\n\n• This path scores highest in **${bestLabel}** (${bestScore}/100) — that's your strongest lever for success.\n• The area to watch is **${worstLabel}** (${worstScore}/100) — it needs extra attention.\n• Overall risk level is ${path.totalRisk}/100 and reward potential is ${path.totalReward}/100.\n\nSome specific things to think about:\n- Risks: ${path.risks.slice(0, 2).join(", ")}\n- Opportunities: ${path.opportunities.slice(0, 2).join(", ")}\n- Confidence in this projection: ${path.confidence}%\n\nTry asking me something more specific like "What happens in Year 1?" or "What are the main risks?" and I'll give you a deeper answer.`;
 }

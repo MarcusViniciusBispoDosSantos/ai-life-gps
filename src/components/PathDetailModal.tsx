@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -12,6 +12,8 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
+  MessageSquare,
+  Send,
 } from "lucide-react";
 import {
   LineChart,
@@ -29,6 +31,7 @@ import {
   DIMENSION_COLORS,
   PATH_META,
 } from "../lib/simulation/types";
+import { answerPathQuestion } from "../lib/simulation/engine";
 
 /* ─── Props ─── */
 interface PathDetailModalProps {
@@ -339,12 +342,121 @@ function KeyInsights({ path }: { path: ScenarioPath }) {
   );
 }
 
+/* ─── Chat / Q&A Component ─── */
+interface ChatMessage {
+  role: "user" | "assistant";
+  text: string;
+}
+
+function PathChat({ path }: { path: ScenarioPath }) {
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      role: "assistant",
+      text: `Ask me anything about the **${path.name}** — what happens in Year 1, what are the main risks, how it compares to other paths, or what you should do next. I'll give you a detailed answer based on the simulation data.`,
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSend = () => {
+    const q = input.trim();
+    if (!q || isTyping) return;
+    setInput("");
+    setMessages((prev) => [...prev, { role: "user", text: q }]);
+    setIsTyping(true);
+
+    // Simulate a brief typing delay for natural feel
+    setTimeout(() => {
+      const answer = answerPathQuestion(path, q);
+      setMessages((prev) => [...prev, { role: "assistant", text: answer }]);
+      setIsTyping(false);
+    }, 400);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full min-h-[320px]">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto space-y-3 pr-1 mb-3">
+        {messages.map((msg, i) => (
+          <div
+            key={i}
+            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                msg.role === "user"
+                  ? "bg-path-safe/15 text-foreground border border-path-safe/20"
+                  : "bg-background text-foreground border border-border/50"
+              }`}
+            >
+              {msg.text.split("\n").map((line, li) => {
+                // Render bold markers
+                const rendered = line.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>');
+                return (
+                  <p
+                    key={li}
+                    className={li > 0 ? "mt-1.5" : ""}
+                    dangerouslySetInnerHTML={{ __html: rendered || " " }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="bg-background border border-border/50 rounded-xl px-3.5 py-2.5 text-xs text-muted">
+              <span className="inline-flex gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-muted/40 animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-muted/40 animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-muted/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+              </span>
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div className="shrink-0 flex items-end gap-2 border-t border-border pt-3">
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder='Ask a question... e.g. "What happens in Year 1?"'
+          rows={2}
+          className="flex-1 bg-background border border-border rounded-xl px-3 py-2 text-xs placeholder:text-muted/50 focus:outline-none focus:ring-1 focus:ring-path-safe/30 resize-none"
+        />
+        <button
+          onClick={handleSend}
+          disabled={!input.trim() || isTyping}
+          className="shrink-0 p-2.5 rounded-xl bg-path-safe text-background hover:brightness-110 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        >
+          <Send className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Modal ─── */
 export default function PathDetailModal({ path, open, onClose }: PathDetailModalProps) {
   if (!path) return null;
 
   const meta = PATH_META[path.kind];
-  const [activeTab, setActiveTab] = useState<"overview" | "timeline" | "scores">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "timeline" | "scores" | "chat">("overview");
 
   /* Close on Escape */
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -409,6 +521,7 @@ export default function PathDetailModal({ path, open, onClose }: PathDetailModal
                 { id: "overview", label: "Overview", icon: Lightbulb },
                 { id: "timeline", label: "Timeline", icon: Calendar },
                 { id: "scores", label: "Scores", icon: BarChart3 },
+                { id: "chat", label: "Ask Questions", icon: MessageSquare },
               ] as const).map((tab) => {
                 const active = activeTab === tab.id;
                 const Icon = tab.icon;
@@ -524,6 +637,17 @@ export default function PathDetailModal({ path, open, onClose }: PathDetailModal
                 >
                   <ScoreTable path={path} />
                   <ScoreProgression path={path} />
+                </motion.div>
+              )}
+
+              {activeTab === "chat" && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="h-full"
+                  style={{ minHeight: "360px" }}
+                >
+                  <PathChat path={path} />
                 </motion.div>
               )}
             </div>
